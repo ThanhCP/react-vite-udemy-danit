@@ -1,8 +1,8 @@
 import axios from "axios";
-const baseURL = import.meta.env.VITE_BACKEND_URL;
+// const baseURL = import.meta.env.VITE_BACKEND_URL;
 const instance = axios.create({
-  //   baseURL: baseURL,
-  baseURL: "http://localhost:8080",
+  // baseURL: "http://localhost:8080",
+  baseURL : import.meta.env.VITE_BACKEND_URL,
 });
 //instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
