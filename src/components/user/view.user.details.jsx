@@ -1,7 +1,8 @@
-import { Button, Drawer,Image  } from "antd";
+import { Button, Drawer,Image, notification  } from "antd";
 import { useState } from "react";
+import { updateUserAvatarAPI, uploadFileAvatar } from "../../service/api.service";
 function ViewUserDetail(props) {
-  const { isDetailOpen, setIsDetailOpen, dataDetail, setDataDetails } = props;
+  const { isDetailOpen, setIsDetailOpen, dataDetail, setDataDetails,loadUser } = props;
   const resetModal = () => {
     setDataDetails(null);
     setIsDetailOpen(false);
@@ -24,6 +25,45 @@ function ViewUserDetail(props) {
       setSelectedFile(file);
       setPreview( URL.createObjectURL(file))
     }
+  }
+
+  const handleUpdateAvatar = async () =>{
+    // step 1: Upload file to folder
+    const resUpload = await uploadFileAvatar(selectedFile, "avatar")
+    if(resUpload.data){
+      const newAvatar = resUpload.data.fileUploaded;
+      // step 2: Update User Avatar
+      const resUpdateAvatar = await updateUserAvatarAPI(
+        newAvatar,dataDetail._id,dataDetail.fullName, dataDetail.phone)
+      if(resUpdateAvatar){
+        setIsDetailOpen(false)
+        setSelectedFile(null)
+        setPreview(null)
+        await loadUser()
+        notification.success(
+          {
+            message: "Update Upload file",
+            description: "Cập nhật thành công"
+          }
+        )
+      }else{
+        notification.error(
+          {
+            message: "Error Upload file",
+            description: JSON.stringify(resUpdateAvatar.message)
+          }
+        )
+      }
+    }else{
+      notification.error(
+        {
+          message: "Error Upload file",
+          description: JSON.stringify(resUpload.message)
+        }
+      )
+      
+    }
+    
   }
 
   return (
@@ -64,7 +104,7 @@ function ViewUserDetail(props) {
                 borderRadius: "5px",
                 cursor: "pointer"
               }}>
-                Upload Avatar
+                Preview Avatar
               </label>
               <input type="file" hidden id="btnUpload"
               onChange={(e) => handleOnChangeFile(e)}
@@ -72,6 +112,7 @@ function ViewUserDetail(props) {
             </div>
             {/* <Button type="primary">Upload Avatar</Button> */}
             {preview && 
+            <>
               <div>
                 <Image
                 style={{marginTop: "15px"}}
@@ -79,7 +120,11 @@ function ViewUserDetail(props) {
                   //src={`http://localhost:8080/images/avatar/${dataDetail.avatar}`}
                   src={preview}
                 />
+              <Button 
+              onClick={() => handleUpdateAvatar()}
+              style={{marginTop: "15px"}} type="primary">Upload Avatar</Button>
               </div>
+            </>
             }
           </>
         ) : (

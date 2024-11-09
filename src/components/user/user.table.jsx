@@ -6,7 +6,7 @@ import ViewUserDetail from "./view.user.details";
 import { deleteUserAPI } from "../../service/api.service";
 
 function UserTable(props) {
-  const { dataUser, loadUser } = props;
+  const { dataUser, loadUser,current,pageSize,total, setCurrent, setPagesize } = props;
 
   const [isModalUpdate, setIsModalUpdate] = useState(false);
 
@@ -33,6 +33,14 @@ function UserTable(props) {
   };
 
   const columns = [
+    {
+      title: "STT",
+      render: (_, record, index) => (
+        <>
+          {(index+1) + (current - 1)*pageSize}
+        </>
+      ),
+    },
     {
       title: "ID",
       dataIndex: "_id",
@@ -88,9 +96,33 @@ function UserTable(props) {
     },
   ];
 
+  const onChange = (pagination, filters, sorter, extra) => { 
+    // nếu thay đổi số trang : current
+    if(pagination && pagination.current){
+      if(+pagination.current !== +current){
+        setCurrent(+pagination.current) // thêm dấu cộng trước tên biến sẽ tự động chuyển từ string sang số nguyên 
+      }
+    }
+    // nếu thay đổi tổng số phần tử : pageSize
+    if(pagination && pagination.pageSize){
+      if(+pagination.pageSize !== +pageSize){
+        setPagesize(+pagination.pageSize) // thêm dấu cộng trước tên biến sẽ tự động chuyển từ string sang số nguyên 
+      }
+    }
+   };
   return (
     <>
-      <Table columns={columns} dataSource={dataUser} rowKey={"_id"} />;
+      <Table columns={columns} dataSource={dataUser} rowKey={"_id"} 
+      pagination={
+        {
+        current: current,
+        pageSize: pageSize,
+        showSizeChanger: true,
+        total: total,
+        showTotal: (total, range) => { return (<div> {range[0]}-{range[1]} trên {total} rows</div>) }
+        } }
+      onChange={onChange}
+      />;
       <UpdateUserModal
         isModalUpdate={isModalUpdate}
         setIsModalUpdate={setIsModalUpdate}
@@ -103,6 +135,7 @@ function UserTable(props) {
         setIsDetailOpen={setIsDetailOpen}
         dataDetail={dataDetail}
         setDataDetails={setDataDetails}
+        loadUser={loadUser}
       />
     </>
   );
